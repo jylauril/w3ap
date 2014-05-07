@@ -117,8 +117,8 @@
         if (!param.length) {
           continue;
         }
-        if (param[0] === 'realm' && !isUndefined(params.realm)) {
-          params.realm = null;
+        if (param[0] === 'realm' && isString(params.realm)) {
+          params.realm = '';
           if (!this.challenges.length) {
             this.error = 'invalid_syntax';
           }
@@ -263,9 +263,6 @@
           }
         }
       } else if (isString(scheme)) {
-        if (isNumber(index) || isString(index)) {
-          result = null;
-        }
         for (i = _j = 0, _len1 = challenges.length; _j < _len1; i = ++_j) {
           challenge = challenges[i];
           if (challenge && challenge.scheme === scheme) {
