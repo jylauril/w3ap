@@ -1,0 +1,64 @@
+{
+  "name": "w3ap",
+  "version": "0.6.0",
+  "description": "A really fast and lightweight WWW-Authenticate header parser that can handle multiple challenges",
+  "main": "./dist/w3ap.js",
+  "scripts": {
+    "build": "grunt",
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jylauril/w3ap.git"
+  },
+  "keywords": [
+    "w3ap",
+    "www",
+    "authenticate",
+    "www-authenticate",
+    "challenge",
+    "scheme",
+    "schema",
+    "header",
+    "parser",
+    "fast"
+  ],
+  "directories": {
+    "lib": "src",
+    "test": "spec",
+    "build": "dist"
+  },
+  "author": {
+    "name": "Jyrki Laurila",
+    "url": "https://github.com/jylauril"
+  },
+  "maintainers": [
+    {
+      "name": "Jyrki Laurila",
+      "url": "https://github.com/jylauril"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "Jyrki Laurila",
+      "url": "https://github.com/jylauril"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jylauril/w3ap/issues"
+  },
+  "homepage": "https://github.com/jylauril/w3ap",
+  "devDependencies": {
+    "bower": "^1.3.2",
+    "grunt": "^0.4.4",
+    "grunt-cli": "^0.1.13",
+    "grunt-coffeelint": "0.0.10",
+    "grunt-contrib-clean": "^0.5.0",
+    "grunt-contrib-coffee": "^0.10.1",
+    "grunt-contrib-concat": "^0.4.0",
+    "grunt-contrib-jasmine": "~0.5",
+    "grunt-contrib-uglify": "^0.4.0",
+    "matchdep": "^0.3.0"
+  }
+}
