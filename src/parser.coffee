@@ -24,8 +24,8 @@ class Parser
       continue unless param.length
 
       # a challenge can only have one realm parameter, otherwise it's considered invalid
-      if param[0] is 'realm' and not isUndefined(params.realm)
-        params.realm = null
+      if param[0] is 'realm' and isString(params.realm)
+        params.realm = ''
         @error = 'invalid_syntax' unless @challenges.length
         continue # continue, so we can catch all params meant for this challenge
 

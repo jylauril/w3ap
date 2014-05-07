@@ -78,7 +78,6 @@ class w3ap
 
     # if scheme is a string, match it to the challenge's scheme
     else if isString(scheme)
-      result = null if isNumber(index) or isString(index)
 
       for challenge, i in challenges
         if challenge and challenge.scheme is scheme
