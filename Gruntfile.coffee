@@ -32,8 +32,8 @@ module.exports = (grunt) ->
         files:
           '<%= pkg.directories.build %>/<%= pkg.name %>.js': [
             '<%= pkg.directories.lib %>/utils.coffee'
-            '<%= pkg.directories.lib %>/parser.coffee'
             '<%= pkg.directories.lib %>/w3ap.coffee'
+            '<%= pkg.directories.lib %>/parser.coffee'
             '<%= pkg.directories.lib %>/expose.coffee'
           ]
 
