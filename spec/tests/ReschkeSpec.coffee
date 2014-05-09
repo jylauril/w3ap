@@ -135,7 +135,7 @@ ReschkeTests = [
     description: 'a header field containing two challenges, the first one for a new scheme and having a parameter called "Basic"'
     header: 'Newauth realm="Newauth Realm", basic=foo, Basic realm="Basic Realm" '
     valid: true
-    expected: [ { scheme: 'newauth', params: { realm: 'Newauth Realm', basic: 'f' } } ]
+    expected: [ { scheme: 'newauth', params: { realm: 'Newauth Realm', basic: 'foo' } }, { scheme: 'basic', params: { realm: 'Basic Realm' } } ]
   }
   {
     description: 'a header field containing a challenge for an unknown scheme'
