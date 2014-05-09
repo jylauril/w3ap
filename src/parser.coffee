@@ -1,4 +1,4 @@
-class Parser
+class w3ap.Parser
   constructor: (@remainder = '') ->
 
   remainder: ''
@@ -19,14 +19,30 @@ class Parser
     @
 
   beginChallenge: (scheme) ->
-    challenge = { scheme: scheme }
-    params = { length: 0 }
+    challenge = { scheme: scheme.toLowerCase() }
+    params = {}
 
+    finishChallenge = =>
+      # certain challenges must always have a realm
+      if @realmRequired.indexOf(scheme) >= 0 and not params.realm
+        @error = 'invalid_syntax' unless @challenges.length
+        return
+
+      challenge.params = params
+
+      # if we get this far, it means that we have at least one working challenge
+      @error = null
+      @challenges.push(challenge)
+      return
+
+    hasParams = false
     while param = @getParam()
       continue unless param.length
 
       # if param has two items, consider them key=val pair
       if param.length is 2
+        if isArray(params)
+          continue # only allow one type of parameters, token68 or token-params
 
         # a challenge can only have one realm parameter, otherwise it's considered invalid
         if param[0] is 'realm' and isString(params.realm)
@@ -35,33 +51,25 @@ class Parser
           continue # continue, so we can catch all params meant for this challenge
 
         params[param[0]] = param[1]
-        params[params.length++] = param
       else
-        # add all params as numerical references as well for token68 + token-param mixes
-        # example: WeirdScheme ZG8gbm90IG1ha2UgdGhpcyBraW5kIG9mIGlkaW90aWMgY2hhbGxlbmdlcw== realm="weird"
-        # result:
-        # {
-        #   scheme: 'weirdscheme',
-        #   params: {
-        #     length: 2,
-        #     0: 'ZG8gbm90IG1ha2UgdGhpcyBraW5kIG9mIGlkaW90aWMgY2hhbGxlbmdlcw==',
-        #     1: ['realm', 'weird'],
-        #     realm: 'weird'
-        #   }
-        # }
-        params[params.length++] = param[0]
+        if isObject(params)
+          if hasParams
+            if param[0][param[0].length - 1] is '='
+              continue # only allow one type of parameters, token68 or token-params
+            else
+              # mixing of token68 and token-params into single challenge is evil
+              # lets assume that the next one is a new challenge instead
+              finishChallenge()
+              return @beginChallenge(param[0])
 
+          # otherwise convert the params to an array
+          params = []
 
-    # certain challenges must always have a realm
-    if @realmRequired.indexOf(scheme) >= 0 and not params.realm
-      @error = 'invalid_syntax' unless @challenges.length
-      return
+        params.push(param[0])
 
-    challenge.params = params
+      hasParams = true
 
-    # if we get this far, it means that we have at least one working challenge
-    @error = null
-    @challenges.push(challenge)
+    finishChallenge()
     return
 
   getParam: ->
