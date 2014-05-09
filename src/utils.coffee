@@ -2,7 +2,6 @@
 # shorthand helper methods for type checks
 isType = (test, type) -> Object.prototype.toString.call(test) is '[object ' + type + ']'
 isString = (test) -> isType(test, 'String')
-isUndefined = (test) -> isType(test, 'Undefined')
 isNumber = (test) -> isType(test, 'Number')
 isObject = (test) -> isType(test, 'Object')
 isArray = (test) -> isType(test, 'Array')
@@ -25,10 +24,12 @@ clone = (obj, deep) ->
   obj
 
 tokenMatch = '[a-zA-Z0-9!#$%&\\\'\\*\\+\\-\\.\\^_`\\|~]+'
+token68Match = '[a-zA-Z0-9\\-\\._\\~\\+\\/]+[=]{0,2}'
 quotedMatch = '"((?:[^"\\\\]|\\\\.)*)"'
 quotedParamMatcher = '(' + tokenMatch + ')=' + quotedMatch
-paramMatcher = '(' + tokenMatch + ')=([\\w])'
+paramMatcher = '(' + tokenMatch + ')=(' + tokenMatch + ')'
 
+schemeRE = new RegExp('^[,\\s]*(' + tokenMatch + ')\\s(.*)')
 quotedParamRE = new RegExp('^[,\\s]*' + quotedParamMatcher + '[,\\s]*(.*)')
 unquotedParamRE = new RegExp('^[,\\s]*' + paramMatcher + '[,\\s]*(.*)')
-schemeRE = new RegExp('^[,\\s]*(' + tokenMatch + ')\\s(.*)')
+token68ParamRE = new RegExp('^(' + token68Match + ')(?:$|[,\\s])(.*)')
