@@ -5,6 +5,8 @@ class Parser
   challenges: []
   error: null
 
+  realmRequired: ['basic', 'digest']
+
   parse: (header) ->
     @remainder = header if isString(header)
 
@@ -18,23 +20,44 @@ class Parser
 
   beginChallenge: (scheme) ->
     challenge = { scheme: scheme }
-    params = challenge.params = {}
+    params = { length: 0 }
 
     while param = @getParam()
       continue unless param.length
 
-      # a challenge can only have one realm parameter, otherwise it's considered invalid
-      if param[0] is 'realm' and isString(params.realm)
-        params.realm = ''
-        @error = 'invalid_syntax' unless @challenges.length
-        continue # continue, so we can catch all params meant for this challenge
+      # if param has two items, consider them key=val pair
+      if param.length is 2
 
-      params[param[0]] = param[1]
+        # a challenge can only have one realm parameter, otherwise it's considered invalid
+        if param[0] is 'realm' and isString(params.realm)
+          params.realm = ''
+          @error = 'invalid_syntax' unless @challenges.length
+          continue # continue, so we can catch all params meant for this challenge
 
-    # a challenge must always have a realm
-    unless params.realm
+        params[param[0]] = param[1]
+        params[params.length++] = param
+      else
+        # add all params as numerical references as well for token68 + token-param mixes
+        # example: WeirdScheme ZG8gbm90IG1ha2UgdGhpcyBraW5kIG9mIGlkaW90aWMgY2hhbGxlbmdlcw== realm="weird"
+        # result:
+        # {
+        #   scheme: 'weirdscheme',
+        #   params: {
+        #     length: 2,
+        #     0: 'ZG8gbm90IG1ha2UgdGhpcyBraW5kIG9mIGlkaW90aWMgY2hhbGxlbmdlcw==',
+        #     1: ['realm', 'weird'],
+        #     realm: 'weird'
+        #   }
+        # }
+        params[params.length++] = param[0]
+
+
+    # certain challenges must always have a realm
+    if @realmRequired.indexOf(scheme) >= 0 and not params.realm
       @error = 'invalid_syntax' unless @challenges.length
       return
+
+    challenge.params = params
 
     # if we get this far, it means that we have at least one working challenge
     @error = null
@@ -78,6 +101,16 @@ class Parser
         return [] if key is 'realm'
 
         return [key, val]
+
+      else
+        # try token68 last
+        param = part.match(token68ParamRE)
+
+        if param
+          [part, val, remainder] = param
+          @remainder = remainder or '' # make sure remainder is always a string
+
+          return [val]
 
     false
 
