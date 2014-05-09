@@ -1,10 +1,10 @@
 /*!
- * w3ap - v0.6.0 - 2014-05-07
+ * w3ap - v0.6.0 - 2014-05-08
  * https://github.com/jylauril/w3ap
  * Copyright (c) 2014 Jyrki Laurila <https://github.com/jylauril>
  */
 (function() {
-  var Parser, clone, isArray, isArrayLike, isFunction, isNumber, isObject, isString, isType, isUndefined, paramMatcher, quotedMatch, quotedParamMatcher, quotedParamRE, schemeRE, tokenMatch, unquotedParamRE, w3ap,
+  var clone, isArray, isArrayLike, isFunction, isNumber, isObject, isString, isType, paramMatcher, quotedMatch, quotedParamMatcher, quotedParamRE, schemeRE, token68Match, token68ParamRE, tokenMatch, unquotedParamRE, w3ap,
     __hasProp = {}.hasOwnProperty;
 
   isType = function(test, type) {
@@ -13,10 +13,6 @@
 
   isString = function(test) {
     return isType(test, 'String');
-  };
-
-  isUndefined = function(test) {
-    return isType(test, 'Undefined');
   };
 
   isNumber = function(test) {
@@ -69,124 +65,21 @@
 
   tokenMatch = '[a-zA-Z0-9!#$%&\\\'\\*\\+\\-\\.\\^_`\\|~]+';
 
+  token68Match = '[a-zA-Z0-9\\-\\._\\~\\+\\/]+[=]{0,2}';
+
   quotedMatch = '"((?:[^"\\\\]|\\\\.)*)"';
 
   quotedParamMatcher = '(' + tokenMatch + ')=' + quotedMatch;
 
-  paramMatcher = '(' + tokenMatch + ')=([\\w])';
+  paramMatcher = '(' + tokenMatch + ')=(' + tokenMatch + ')';
+
+  schemeRE = new RegExp('^[,\\s]*(' + tokenMatch + ')\\s(.*)');
 
   quotedParamRE = new RegExp('^[,\\s]*' + quotedParamMatcher + '[,\\s]*(.*)');
 
   unquotedParamRE = new RegExp('^[,\\s]*' + paramMatcher + '[,\\s]*(.*)');
 
-  schemeRE = new RegExp('^[,\\s]*(' + tokenMatch + ')\\s(.*)');
-
-  Parser = (function() {
-    function Parser(remainder) {
-      this.remainder = remainder != null ? remainder : '';
-    }
-
-    Parser.prototype.remainder = '';
-
-    Parser.prototype.challenges = [];
-
-    Parser.prototype.error = null;
-
-    Parser.prototype.parse = function(header) {
-      var scheme;
-      if (isString(header)) {
-        this.remainder = header;
-      }
-      this.challenges = [];
-      while (scheme = this.getScheme()) {
-        this.beginChallenge(scheme);
-      }
-      if (!this.challenges.length) {
-        this.error = 'invalid_syntax';
-      }
-      return this;
-    };
-
-    Parser.prototype.beginChallenge = function(scheme) {
-      var challenge, param, params;
-      challenge = {
-        scheme: scheme
-      };
-      params = challenge.params = {};
-      while (param = this.getParam()) {
-        if (!param.length) {
-          continue;
-        }
-        if (param[0] === 'realm' && isString(params.realm)) {
-          params.realm = '';
-          if (!this.challenges.length) {
-            this.error = 'invalid_syntax';
-          }
-          continue;
-        }
-        params[param[0]] = param[1];
-      }
-      if (!params.realm) {
-        if (!this.challenges.length) {
-          this.error = 'invalid_syntax';
-        }
-        return;
-      }
-      this.error = null;
-      this.challenges.push(challenge);
-    };
-
-    Parser.prototype.getParam = function() {
-      var e, key, param, part, remainder, val, value;
-      part = this.remainder;
-      param = part.match(quotedParamRE);
-      if (param) {
-        part = param[0], key = param[1], val = param[2], remainder = param[3];
-        this.remainder = remainder || '';
-        value = val;
-        if (val.indexOf('\\') >= 0) {
-          try {
-            value = JSON.parse('"' + val + '"');
-          } catch (_error) {
-            e = _error;
-            value = val;
-          }
-        }
-        return [key.toLowerCase(), value];
-      } else {
-        param = part.match(unquotedParamRE);
-        if (param) {
-          part = param[0], key = param[1], val = param[2], remainder = param[3];
-          this.remainder = remainder || '';
-          key = key.toLowerCase();
-          if (key === 'realm') {
-            return [];
-          }
-          return [key, val];
-        }
-      }
-      return false;
-    };
-
-    Parser.prototype.getScheme = function() {
-      var part, remainder, scheme, _ref;
-      part = this.remainder;
-      scheme = part.match(schemeRE);
-      if (scheme && scheme.length > 1) {
-        _ref = scheme, part = _ref[0], scheme = _ref[1], remainder = _ref[2];
-        this.remainder = remainder || '';
-        return scheme.toLowerCase();
-      }
-      return false;
-    };
-
-    Parser.prototype.toObject = function() {
-      return clone(this.challenges, true);
-    };
-
-    return Parser;
-
-  })();
+  token68ParamRE = new RegExp('^(' + token68Match + ')(?:$|[,\\s])(.*)');
 
   w3ap = (function() {
     function w3ap(header) {
@@ -231,7 +124,7 @@
       this._challenges = [];
       if (header && isString(header)) {
         this._header = header;
-        parser = new Parser();
+        parser = new w3ap.Parser();
         parser.parse(header);
         if (parser.error) {
           this._error = parser.error;
@@ -263,6 +156,7 @@
           }
         }
       } else if (isString(scheme)) {
+        scheme = scheme.toLowerCase();
         for (i = _j = 0, _len1 = challenges.length; _j < _len1; i = ++_j) {
           challenge = challenges[i];
           if (challenge && challenge.scheme === scheme) {
@@ -289,7 +183,7 @@
       } else {
         result = challenges;
       }
-      if (result && result.length) {
+      if (result && (isObject(result) || result.length)) {
         return result;
       } else {
         return null;
@@ -307,14 +201,153 @@
 
   })();
 
+  w3ap.Parser = (function() {
+    function Parser(remainder) {
+      this.remainder = remainder != null ? remainder : '';
+    }
+
+    Parser.prototype.remainder = '';
+
+    Parser.prototype.challenges = [];
+
+    Parser.prototype.error = null;
+
+    Parser.prototype.realmRequired = ['basic', 'digest'];
+
+    Parser.prototype.parse = function(header) {
+      var scheme;
+      if (isString(header)) {
+        this.remainder = header;
+      }
+      this.challenges = [];
+      while (scheme = this.getScheme()) {
+        this.beginChallenge(scheme);
+      }
+      if (!this.challenges.length) {
+        this.error = 'invalid_syntax';
+      }
+      return this;
+    };
+
+    Parser.prototype.beginChallenge = function(scheme) {
+      var challenge, finishChallenge, hasParams, param, params;
+      challenge = {
+        scheme: scheme.toLowerCase()
+      };
+      params = {};
+      finishChallenge = (function(_this) {
+        return function() {
+          if (_this.realmRequired.indexOf(scheme) >= 0 && !params.realm) {
+            if (!_this.challenges.length) {
+              _this.error = 'invalid_syntax';
+            }
+            return;
+          }
+          challenge.params = params;
+          _this.error = null;
+          _this.challenges.push(challenge);
+        };
+      })(this);
+      hasParams = false;
+      while (param = this.getParam()) {
+        if (!param.length) {
+          continue;
+        }
+        if (param.length === 2) {
+          if (isArray(params)) {
+            continue;
+          }
+          if (param[0] === 'realm' && isString(params.realm)) {
+            params.realm = '';
+            if (!this.challenges.length) {
+              this.error = 'invalid_syntax';
+            }
+            continue;
+          }
+          params[param[0]] = param[1];
+        } else {
+          if (isObject(params)) {
+            if (hasParams) {
+              if (param[0][param[0].length - 1] === '=') {
+                continue;
+              } else {
+                finishChallenge();
+                return this.beginChallenge(param[0]);
+              }
+            }
+            params = [];
+          }
+          params.push(param[0]);
+        }
+        hasParams = true;
+      }
+      finishChallenge();
+    };
+
+    Parser.prototype.getParam = function() {
+      var e, key, param, part, remainder, val, value;
+      part = this.remainder;
+      param = part.match(quotedParamRE);
+      if (param) {
+        part = param[0], key = param[1], val = param[2], remainder = param[3];
+        this.remainder = remainder || '';
+        value = val;
+        if (val.indexOf('\\') >= 0) {
+          try {
+            value = JSON.parse('"' + val + '"');
+          } catch (_error) {
+            e = _error;
+            value = val;
+          }
+        }
+        return [key.toLowerCase(), value];
+      } else {
+        param = part.match(unquotedParamRE);
+        if (param) {
+          part = param[0], key = param[1], val = param[2], remainder = param[3];
+          this.remainder = remainder || '';
+          key = key.toLowerCase();
+          if (key === 'realm') {
+            return [];
+          }
+          return [key, val];
+        } else {
+          param = part.match(token68ParamRE);
+          if (param) {
+            part = param[0], val = param[1], remainder = param[2];
+            this.remainder = remainder || '';
+            return [val];
+          }
+        }
+      }
+      return false;
+    };
+
+    Parser.prototype.getScheme = function() {
+      var part, remainder, scheme, _ref;
+      part = this.remainder;
+      scheme = part.match(schemeRE);
+      if (scheme && scheme.length > 1) {
+        _ref = scheme, part = _ref[0], scheme = _ref[1], remainder = _ref[2];
+        this.remainder = remainder || '';
+        return scheme.toLowerCase();
+      }
+      return false;
+    };
+
+    Parser.prototype.toObject = function() {
+      return clone(this.challenges, true);
+    };
+
+    return Parser;
+
+  })();
+
   (function(root, factory) {
-    var exports;
     if (typeof define === 'function' && define.amd) {
       define(factory);
     } else if (typeof module === 'object') {
       module.exports = factory();
-    } else if (typeof exports === 'object') {
-      exports = factory();
     } else {
       root.w3ap = factory();
     }
