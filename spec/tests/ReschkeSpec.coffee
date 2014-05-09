@@ -161,6 +161,42 @@ ReschkeTests = [
     valid: false
     expected: 'error'
   }
+  {
+    description: 'a token68 test without following equal sign'
+    header: 'NTLS Y2hhbGxlbmdlIHdpdGggYmFzZTY0IGRhdGEgd2l0aG91dCBlcXVhbCBzaWdu'
+    valid: true
+    expected: [ { scheme: 'ntls', params: [ 'Y2hhbGxlbmdlIHdpdGggYmFzZTY0IGRhdGEgd2l0aG91dCBlcXVhbCBzaWdu' ] } ]
+  }
+  {
+    description: 'a token68 test without following equal sign and another challenge'
+    header: 'NTLS Y2hhbGxlbmdlIHdpdGggYmFzZTY0IGRhdGEgd2l0aG91dCBlcXVhbCBzaWdu, Basic realm="foobar"'
+    valid: true
+    expected: [ { scheme: 'ntls', params: [ 'Y2hhbGxlbmdlIHdpdGggYmFzZTY0IGRhdGEgd2l0aG91dCBlcXVhbCBzaWdu' ] }, scheme: 'basic', params: { realm: 'foobar' } ]
+  }
+  {
+    description: 'a token68 test with following equal sign'
+    header: 'NTLS Y2hhbGxlbmdlIHdpdGggYmFzZTY0IGRhdGE='
+    valid: true
+    expected: [ { scheme: 'ntls', params: [ 'Y2hhbGxlbmdlIHdpdGggYmFzZTY0IGRhdGE=' ] } ]
+  }
+  {
+    description: 'a token68 test with following equal sign and another challenge'
+    header: 'NTLS Y2hhbGxlbmdlIHdpdGggYmFzZTY0IGRhdGE=, Basic realm="foobar"'
+    valid: true
+    expected: [ { scheme: 'ntls', params: [ 'Y2hhbGxlbmdlIHdpdGggYmFzZTY0IGRhdGE=' ] }, scheme: 'basic', params: { realm: 'foobar' } ]
+  }
+  {
+    description: 'a token68 test with two following equal sign'
+    header: 'NTLS Y2hhbGxlbmdlIHdpdGggbW9yZSBiYXNlNjQgZGF0YQ=='
+    valid: true
+    expected: [ { scheme: 'ntls', params: [ 'Y2hhbGxlbmdlIHdpdGggbW9yZSBiYXNlNjQgZGF0YQ==' ] } ]
+  }
+  {
+    description: 'a token68 test with two following equal sign and another challenge'
+    header: 'NTLS Y2hhbGxlbmdlIHdpdGggbW9yZSBiYXNlNjQgZGF0YQ==, Basic realm="foobar"'
+    valid: true
+    expected: [ { scheme: 'ntls', params: [ 'Y2hhbGxlbmdlIHdpdGggbW9yZSBiYXNlNjQgZGF0YQ==' ] }, scheme: 'basic', params: { realm: 'foobar' } ]
+  }
 ]
 
 describe 'Reschke tests', ->
