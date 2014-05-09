@@ -78,6 +78,7 @@ class w3ap
 
     # if scheme is a string, match it to the challenge's scheme
     else if isString(scheme)
+      scheme = scheme.toLowerCase()
 
       for challenge, i in challenges
         if challenge and challenge.scheme is scheme
@@ -109,7 +110,7 @@ class w3ap
     else
       result = challenges
 
-    if result and result.length then result else null
+    if result and (isObject(result) or result.length) then result else null
 
   toObject: ->
     return new Error(@_error) if @_error
