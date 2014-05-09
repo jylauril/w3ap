@@ -8,10 +8,6 @@
   else if typeof module is 'object'
     module.exports = factory()
 
-  # CommonJS style exports
-  else if typeof exports is 'object'
-    exports = factory()
-
   # Otherwise expose to root (ie. window in browser)
   else
     root.w3ap = factory()
