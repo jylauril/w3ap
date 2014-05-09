@@ -46,7 +46,7 @@ class w3ap
       @_header = header
 
       # create new parser instance
-      parser = new Parser()
+      parser = new w3ap.Parser()
       parser.parse(header)
 
       if parser.error
