@@ -4,9 +4,12 @@ class w3ap
     return new w3ap(header) unless (@ instanceof w3ap)
     @parse(header)
 
+  isProxy: false
+
   # the default header key to use when fetching from a get header -method
   # can also parse a Proxy-Authenticate header
   _key: 'WWW-Authenticate'
+  _proxyKey: 'Proxy-Authenticate'
   _error: null
   _header: null
   _challenges: []
@@ -17,27 +20,50 @@ class w3ap
     unless arguments.length
       header = @_header
 
+    @isProxy = false
+    tmp = header
+
     if isObject(header)
 
       # check if we were given a regular XmlHttpRequest object
       if isFunction(header.getResponseHeader)
-        header = header.getResponseHeader(@_key)
+
+        tmp = header.getResponseHeader(@_key)
+        unless tmp and isString(tmp)
+          tmp = header.getResponseHeader(@_proxyKey)
+          @isProxy = true if tmp and isString(tmp)
 
       # check if we have a node http client -style method
       else if isFunction(header.getHeader)
-        header = header.getHeader(@_key)
+
+        tmp = header.getHeader(@_key)
+        unless tmp and isString(tmp)
+          tmp = header.getHeader(@_proxyKey)
+          @isProxy = true if tmp and isString(tmp)
 
       # check if we have an Angular -style method for retrieving headers
       else if isFunction(header.headers)
-        tmp = header.headers(@_key)
 
-        # fallback to older way of retrieving headers with Angular response object
-        tmp = (header.headers() or {})[@_key] unless tmp and isString(tmp)
-        header = tmp
+        tmp = header.headers(@_key)
+        unless tmp and isString(tmp)
+          tmp = header.headers(@_proxyKey)
+          unless tmp and isString(tmp)
+
+            # fallback to older way of retrieving headers with Angular response object
+            tmp = header.headers()[@_key]
+            unless tmp and isString(tmp)
+              tmp = header.headers()[@_proxyKey]
+              @isProxy = true if tmp and isString(tmp)
+
+          else @isProxy = true
 
     else if isFunction(header)
-      header = header(@_key)
+      tmp = header(@_key)
+      unless tmp and isString(tmp)
+        tmp = header(@_proxyKey)
+        @isProxy = true if tmp and isString(tmp)
 
+    header = tmp
     # start with empty set
     @_challenges = []
 
