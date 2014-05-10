@@ -19,7 +19,8 @@ class w3ap.Parser
     @
 
   beginChallenge: (scheme) ->
-    challenge = { scheme: scheme.toLowerCase() }
+    scheme = scheme.toLowerCase()
+    challenge = { scheme: scheme }
     params = {}
 
     finishChallenge = =>
