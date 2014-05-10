@@ -1,5 +1,5 @@
 /*!
- * w3ap - v0.6.0 - 2014-05-08
+ * w3ap - v0.6.0 - 2014-05-09
  * https://github.com/jylauril/w3ap
  * Copyright (c) 2014 Jyrki Laurila <https://github.com/jylauril>
  */
@@ -89,7 +89,11 @@
       this.parse(header);
     }
 
+    w3ap.prototype.isProxy = false;
+
     w3ap.prototype._key = 'WWW-Authenticate';
+
+    w3ap.prototype._proxyKey = 'Proxy-Authenticate';
 
     w3ap.prototype._error = null;
 
@@ -106,21 +110,52 @@
       if (!arguments.length) {
         header = this._header;
       }
+      this.isProxy = false;
+      tmp = header;
       if (isObject(header)) {
         if (isFunction(header.getResponseHeader)) {
-          header = header.getResponseHeader(this._key);
+          tmp = header.getResponseHeader(this._key);
+          if (!(tmp && isString(tmp))) {
+            tmp = header.getResponseHeader(this._proxyKey);
+            if (tmp && isString(tmp)) {
+              this.isProxy = true;
+            }
+          }
         } else if (isFunction(header.getHeader)) {
-          header = header.getHeader(this._key);
+          tmp = header.getHeader(this._key);
+          if (!(tmp && isString(tmp))) {
+            tmp = header.getHeader(this._proxyKey);
+            if (tmp && isString(tmp)) {
+              this.isProxy = true;
+            }
+          }
         } else if (isFunction(header.headers)) {
           tmp = header.headers(this._key);
           if (!(tmp && isString(tmp))) {
-            tmp = (header.headers() || {})[this._key];
+            tmp = header.headers(this._proxyKey);
+            if (!(tmp && isString(tmp))) {
+              tmp = header.headers()[this._key];
+              if (!(tmp && isString(tmp))) {
+                tmp = header.headers()[this._proxyKey];
+                if (tmp && isString(tmp)) {
+                  this.isProxy = true;
+                }
+              }
+            } else {
+              this.isProxy = true;
+            }
           }
-          header = tmp;
         }
       } else if (isFunction(header)) {
-        header = header(this._key);
+        tmp = header(this._key);
+        if (!(tmp && isString(tmp))) {
+          tmp = header(this._proxyKey);
+          if (tmp && isString(tmp)) {
+            this.isProxy = true;
+          }
+        }
       }
+      header = tmp;
       this._challenges = [];
       if (header && isString(header)) {
         this._header = header;
@@ -231,8 +266,9 @@
 
     Parser.prototype.beginChallenge = function(scheme) {
       var challenge, finishChallenge, hasParams, param, params;
+      scheme = scheme.toLowerCase();
       challenge = {
-        scheme: scheme.toLowerCase()
+        scheme: scheme
       };
       params = {};
       finishChallenge = (function(_this) {
