@@ -91,7 +91,7 @@ class w3ap
     result = []
     challenges = @toObject()
 
-    return challenges if isType(challenges, 'Error')
+    return challenges if isError(challenges)
 
     # if scheme is a number, return the nth matching scheme
     if isNumber(scheme)

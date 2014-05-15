@@ -1,13 +1,14 @@
 
 # shorthand helper methods for type checks
-isType = (test, type) -> Object.prototype.toString.call(test) is '[object ' + type + ']'
-isString = (test) -> isType(test, 'String')
-isNumber = (test) -> isType(test, 'Number')
-isObject = (test) -> isType(test, 'Object')
-isArray = (test) -> isType(test, 'Array')
+isType = (type) -> (test) -> Object.prototype.toString.call(test) is '[object ' + type + ']'
+isString = isType('String')
+isNumber = isType('Number')
+isObject = isType('Object')
+isArray = isType('Array')
+isError = isType('Error')
+isString = isType('String')
+isFunction = isType('Function')
 isArrayLike = (test) -> isArray(test) or (test and not isString(test) and isNumber(test.length))
-isString = (test) -> isType(test, 'String')
-isFunction = (test) -> isType(test, 'Function')
 
 clone = (obj, deep) ->
   if isArrayLike(obj)
