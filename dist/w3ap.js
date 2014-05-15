@@ -1,42 +1,34 @@
 /*!
- * w3ap - v0.6.0 - 2014-05-09
+ * w3ap - v0.6.0 - 2014-05-14
  * https://github.com/jylauril/w3ap
  * Copyright (c) 2014 Jyrki Laurila <https://github.com/jylauril>
  */
 (function() {
-  var clone, isArray, isArrayLike, isFunction, isNumber, isObject, isString, isType, paramMatcher, quotedMatch, quotedParamMatcher, quotedParamRE, schemeRE, token68Match, token68ParamRE, tokenMatch, unquotedParamRE, w3ap,
+  var clone, isArray, isArrayLike, isError, isFunction, isNumber, isObject, isString, isType, paramMatcher, quotedMatch, quotedParamMatcher, quotedParamRE, schemeRE, token68Match, token68ParamRE, tokenMatch, unquotedParamRE, w3ap,
     __hasProp = {}.hasOwnProperty;
 
-  isType = function(test, type) {
-    return Object.prototype.toString.call(test) === '[object ' + type + ']';
+  isType = function(type) {
+    return function(test) {
+      return Object.prototype.toString.call(test) === '[object ' + type + ']';
+    };
   };
 
-  isString = function(test) {
-    return isType(test, 'String');
-  };
+  isString = isType('String');
 
-  isNumber = function(test) {
-    return isType(test, 'Number');
-  };
+  isNumber = isType('Number');
 
-  isObject = function(test) {
-    return isType(test, 'Object');
-  };
+  isObject = isType('Object');
 
-  isArray = function(test) {
-    return isType(test, 'Array');
-  };
+  isArray = isType('Array');
+
+  isError = isType('Error');
+
+  isString = isType('String');
+
+  isFunction = isType('Function');
 
   isArrayLike = function(test) {
     return isArray(test) || (test && !isString(test) && isNumber(test.length));
-  };
-
-  isString = function(test) {
-    return isType(test, 'String');
-  };
-
-  isFunction = function(test) {
-    return isType(test, 'Function');
   };
 
   clone = function(obj, deep) {
@@ -178,7 +170,7 @@
       var challenge, challenges, i, result, _i, _j, _len, _len1;
       result = [];
       challenges = this.toObject();
-      if (isType(challenges, 'Error')) {
+      if (isError(challenges)) {
         return challenges;
       }
       if (isNumber(scheme)) {
