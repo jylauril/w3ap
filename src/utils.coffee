@@ -3,12 +3,15 @@
 isType = (type) -> (test) -> Object.prototype.toString.call(test) is '[object ' + type + ']'
 isString = isType('String')
 isNumber = isType('Number')
-isObject = isType('Object')
 isArray = isType('Array')
 isError = isType('Error')
 isString = isType('String')
 isFunction = isType('Function')
 isArrayLike = (test) -> isArray(test) or (test and not isString(test) and isNumber(test.length))
+isObject = isType('Object')
+
+if isObject(undefined) # fix for stupid IE
+  isObject = (test) -> test and isType('Object')(test)
 
 clone = (obj, deep) ->
   if isArrayLike(obj)
