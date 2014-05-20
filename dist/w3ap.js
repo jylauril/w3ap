@@ -1,5 +1,5 @@
 /*!
- * w3ap - v0.6.0 - 2014-05-14
+ * w3ap - v0.6.0 - 2014-05-20
  * https://github.com/jylauril/w3ap
  * Copyright (c) 2014 Jyrki Laurila <https://github.com/jylauril>
  */
@@ -17,8 +17,6 @@
 
   isNumber = isType('Number');
 
-  isObject = isType('Object');
-
   isArray = isType('Array');
 
   isError = isType('Error');
@@ -30,6 +28,14 @@
   isArrayLike = function(test) {
     return isArray(test) || (test && !isString(test) && isNumber(test.length));
   };
+
+  isObject = isType('Object');
+
+  if (isObject(void 0)) {
+    isObject = function(test) {
+      return test && isType('Object')(test);
+    };
+  }
 
   clone = function(obj, deep) {
     var i, key, newArr, newObj, value, _i, _len;
