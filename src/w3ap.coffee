@@ -27,41 +27,35 @@ class w3ap
 
       # check if we were given a regular XmlHttpRequest object
       if isFunction(header.getResponseHeader)
-
-        tmp = header.getResponseHeader(@_key)
-        unless tmp and isString(tmp)
-          tmp = header.getResponseHeader(@_proxyKey)
-          @isProxy = true if tmp and isString(tmp)
+        header = header.getResponseHeader.bind(header)
 
       # check if we have a node http client -style method
       else if isFunction(header.getHeader)
-
-        tmp = header.getHeader(@_key)
-        unless tmp and isString(tmp)
-          tmp = header.getHeader(@_proxyKey)
-          @isProxy = true if tmp and isString(tmp)
+        header = header.getHeader.bind(header)
 
       # check if we have an Angular -style method for retrieving headers
       else if isFunction(header.headers)
+        header = header.headers.bind(header)
 
-        tmp = header.headers(@_key)
-        unless tmp and isString(tmp)
-          tmp = header.headers(@_proxyKey)
-          unless tmp and isString(tmp)
+    if isFunction(header)
 
-            # fallback to older way of retrieving headers with Angular response object
-            tmp = header.headers()[@_key]
-            unless tmp and isString(tmp)
-              tmp = header.headers()[@_proxyKey]
-              @isProxy = true if tmp and isString(tmp)
-
-          else @isProxy = true
-
-    else if isFunction(header)
       tmp = header(@_key)
       unless tmp and isString(tmp)
         tmp = header(@_proxyKey)
-        @isProxy = true if tmp and isString(tmp)
+
+        unless tmp and isString(tmp)
+
+          # fallback to older way of retrieving headers with Angular response object
+          header = header()
+          tmp = header[@_key]
+
+          unless tmp and isString(tmp)
+            tmp = header[@_proxyKey]
+
+            if tmp and isString(tmp)
+              @isProxy = true
+
+        else @isProxy = true
 
     header = tmp
     # start with empty set
