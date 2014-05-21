@@ -112,43 +112,27 @@
       tmp = header;
       if (isObject(header)) {
         if (isFunction(header.getResponseHeader)) {
-          tmp = header.getResponseHeader(this._key);
-          if (!(tmp && isString(tmp))) {
-            tmp = header.getResponseHeader(this._proxyKey);
-            if (tmp && isString(tmp)) {
-              this.isProxy = true;
-            }
-          }
+          header = header.getResponseHeader.bind(header);
         } else if (isFunction(header.getHeader)) {
-          tmp = header.getHeader(this._key);
-          if (!(tmp && isString(tmp))) {
-            tmp = header.getHeader(this._proxyKey);
-            if (tmp && isString(tmp)) {
-              this.isProxy = true;
-            }
-          }
+          header = header.getHeader.bind(header);
         } else if (isFunction(header.headers)) {
-          tmp = header.headers(this._key);
-          if (!(tmp && isString(tmp))) {
-            tmp = header.headers(this._proxyKey);
-            if (!(tmp && isString(tmp))) {
-              tmp = header.headers()[this._key];
-              if (!(tmp && isString(tmp))) {
-                tmp = header.headers()[this._proxyKey];
-                if (tmp && isString(tmp)) {
-                  this.isProxy = true;
-                }
-              }
-            } else {
-              this.isProxy = true;
-            }
-          }
+          header = header.headers.bind(header);
         }
-      } else if (isFunction(header)) {
+      }
+      if (isFunction(header)) {
         tmp = header(this._key);
         if (!(tmp && isString(tmp))) {
           tmp = header(this._proxyKey);
-          if (tmp && isString(tmp)) {
+          if (!(tmp && isString(tmp))) {
+            header = header();
+            tmp = header[this._key];
+            if (!(tmp && isString(tmp))) {
+              tmp = header[this._proxyKey];
+              if (tmp && isString(tmp)) {
+                this.isProxy = true;
+              }
+            }
+          } else {
             this.isProxy = true;
           }
         }
