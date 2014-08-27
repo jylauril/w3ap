@@ -1,5 +1,5 @@
 /*!
- * w3ap - v0.6.0 - 2014-05-20
+ * w3ap - v0.6.0 - 2014-08-27
  * https://github.com/jylauril/w3ap
  * Copyright (c) 2014 Jyrki Laurila <https://github.com/jylauril>
  */
@@ -248,6 +248,9 @@
 
     Parser.prototype.beginChallenge = function(scheme) {
       var challenge, finishChallenge, hasParams, param, params;
+      if (!scheme) {
+        return;
+      }
       scheme = scheme.toLowerCase();
       challenge = {
         scheme: scheme
@@ -318,13 +321,13 @@
             value = val;
           }
         }
-        return [key.toLowerCase(), value];
+        return [key && key.toLowerCase() || '', value];
       } else {
         param = part.match(unquotedParamRE);
         if (param) {
           part = param[0], key = param[1], val = param[2], remainder = param[3];
           this.remainder = remainder || '';
-          key = key.toLowerCase();
+          key = key && key.toLowerCase() || '';
           if (key === 'realm') {
             return [];
           }
@@ -348,7 +351,7 @@
       if (scheme && scheme.length > 1) {
         _ref = scheme, part = _ref[0], scheme = _ref[1], remainder = _ref[2];
         this.remainder = remainder || '';
-        return scheme.toLowerCase();
+        return scheme && scheme.toLowerCase();
       }
       return false;
     };
