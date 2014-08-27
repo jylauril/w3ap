@@ -19,6 +19,7 @@ class w3ap.Parser
     @
 
   beginChallenge: (scheme) ->
+    return unless scheme
     scheme = scheme.toLowerCase()
     challenge = { scheme: scheme }
     params = {}
@@ -93,7 +94,7 @@ class w3ap.Parser
 
       # protocol states param keys are in-case-sensitive
       # so we make them all lowercase to help match them
-      return [key.toLowerCase(), value]
+      return [(key and key.toLowerCase() or ''), value]
     else
       # try un-quoted params next
       param = part.match(unquotedParamRE)
@@ -104,7 +105,7 @@ class w3ap.Parser
 
         # protocol states param keys are in-case-sensitive
         # so we make them all lowercase to help match them
-        key = key.toLowerCase()
+        key = key and key.toLowerCase() or ''
 
         # realm must not have un-quoted value
         return [] if key is 'realm'
@@ -135,7 +136,7 @@ class w3ap.Parser
 
       # protocol states scheme names are in-case-sensitive
       # so we make them all lowercase to help match them
-      return scheme.toLowerCase()
+      return scheme and scheme.toLowerCase()
 
     false
 
