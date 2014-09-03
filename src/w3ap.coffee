@@ -46,8 +46,12 @@ class w3ap
         unless tmp and isString(tmp)
 
           # fallback to older way of retrieving headers with Angular response object
-          header = header()
-          tmp = header[@_key]
+          try
+            # jQuery seems to throw an error when getRequestHeader is called without a parameter, so work around it
+            header = header()
+            tmp = header[@_key]
+          catch e
+            tmp = null
 
           unless tmp and isString(tmp)
             tmp = header[@_proxyKey]
