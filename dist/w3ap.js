@@ -1,5 +1,5 @@
 /*!
- * w3ap - v0.6.0 - 2014-08-27
+ * w3ap - v0.6.0 - 2014-09-03
  * https://github.com/jylauril/w3ap
  * Copyright (c) 2014 Jyrki Laurila <https://github.com/jylauril>
  */
@@ -104,7 +104,7 @@
     };
 
     w3ap.prototype.parse = function(header) {
-      var parser, tmp;
+      var e, parser, tmp;
       if (!arguments.length) {
         header = this._header;
       }
@@ -124,8 +124,13 @@
         if (!(tmp && isString(tmp))) {
           tmp = header(this._proxyKey);
           if (!(tmp && isString(tmp))) {
-            header = header();
-            tmp = header[this._key];
+            try {
+              header = header();
+              tmp = header[this._key];
+            } catch (_error) {
+              e = _error;
+              tmp = null;
+            }
             if (!(tmp && isString(tmp))) {
               tmp = header[this._proxyKey];
               if (tmp && isString(tmp)) {
